@@ -7,8 +7,8 @@
 *A rule-based failure classifier, a meta-evaluator that scores your evaluator, and a statistically honest regression CI — in one library.*
 
 [![CI](https://github.com/Avinash15042002/AgentProbe/actions/workflows/eval.yml/badge.svg)](https://github.com/Avinash15042002/AgentProbe/actions/workflows/eval.yml)
-[![PyPI](https://img.shields.io/pypi/v/agentprobe)](https://pypi.org/project/agentprobe/)
-[![Python](https://img.shields.io/pypi/pyversions/agentprobe)](https://pypi.org/project/agentprobe/)
+[![PyPI](https://img.shields.io/pypi/v/agentprobe-ai)](https://pypi.org/project/agentprobe-ai/)
+[![Python](https://img.shields.io/pypi/pyversions/agentprobe-ai)](https://pypi.org/project/agentprobe-ai/)
 [![License: MIT](https://img.shields.io/github/license/Avinash15042002/AgentProbe)](LICENSE)
 [![Code style: Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 ![Tests](https://img.shields.io/badge/tests-139%20passing-brightgreen)
@@ -36,14 +36,17 @@
 ## 📦 Install
 
 ```bash
-pip install agentprobe
+pip install agentprobe-ai
 ```
+
+> The distribution is **`agentprobe-ai`** on PyPI, but you still import it as `agentprobe`:
+> `from agentprobe import probe`.
 
 PostgreSQL and dashboard extras are optional:
 
 ```bash
-pip install "agentprobe[postgres]"    # asyncpg driver for Postgres
-pip install "agentprobe[dashboard]"   # Streamlit dashboard
+pip install "agentprobe-ai[postgres]"    # asyncpg driver for Postgres
+pip install "agentprobe-ai[dashboard]"   # Streamlit dashboard
 ```
 
 ---
@@ -284,7 +287,7 @@ pytest -q                       # 118 passing
 uvicorn api.main:app --reload   # http://localhost:8000/docs
 ```
 
-> 📦 Released on PyPI — `pip install agentprobe` (see [Install](#-install)).
+> 📦 Released on PyPI — `pip install agentprobe-ai` (see [Install](#-install)).
 
 ---
 
