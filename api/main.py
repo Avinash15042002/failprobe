@@ -18,7 +18,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from failprobe.storage import init_db
 from api.routes import compare, eval, failures, golden, review, runs
 
-VERSION = "0.2.0"
+VERSION = "0.2.1"
 
 # Paths that never require an API key (and never need the DB).
 _AUTH_EXEMPT = frozenset({"/health", "/docs", "/redoc", "/openapi.json"})

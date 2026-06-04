@@ -54,7 +54,7 @@ async def test_health(client: AsyncClient) -> None:
     """``GET /health`` returns 200 with status and version."""
     resp = await client.get("/health")
     assert resp.status_code == 200
-    assert resp.json() == {"status": "ok", "version": "0.2.0"}
+    assert resp.json() == {"status": "ok", "version": "0.2.1"}
 
 
 async def test_list_runs_empty(client: AsyncClient) -> None:
