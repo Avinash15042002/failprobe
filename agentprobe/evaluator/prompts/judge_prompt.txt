@@ -1,0 +1,18 @@
+You are an expert AI evaluator. Evaluate the following agent run.
+
+TASK INPUT: {input}
+AGENT OUTPUT: {output}
+TOOL CALLS MADE: {tool_calls_summary}
+
+RUBRIC:
+{rubric}
+
+Respond in JSON with exactly these fields:
+{
+  "score": <float 0.0-1.0>,
+  "reasoning": "<one paragraph>",
+  "confidence": <float 0.0-1.0>,
+  "key_issues": ["<issue1>", "<issue2>"]
+}
+
+Return ONLY the JSON. No preamble, no markdown.
