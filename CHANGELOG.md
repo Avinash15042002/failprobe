@@ -18,7 +18,7 @@ First public release.
   fingerprinting, and counters — **zero LLM or network calls**, sub-10ms.
 - **Async tracer + storage** — SQLAlchemy 2.0 (async) models with Alembic
   migrations, backed by SQLite out of the box and PostgreSQL via the
-  `agentprobe[postgres]` extra.
+  `failprobe[postgres]` extra.
 - **LLM judge + meta-evaluation** — scores your evaluator against a
   human-labelled golden dataset and reports judge accuracy with a bootstrapped
   95% confidence interval.
