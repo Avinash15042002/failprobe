@@ -1,0 +1,18 @@
+{
+  "suite_name": "demo-weather-booking-eval",
+  "passed": true,
+  "n_cases": 20,
+  "n_passed": 20,
+  "accuracy": 1.0,
+  "accuracy_ci": [
+    1.0,
+    1.0
+  ],
+  "baseline_accuracy": null,
+  "accuracy_delta": null,
+  "accuracy_delta_significant": false,
+  "avg_cost_usd": 0.0,
+  "cost_delta_pct": null,
+  "failure_breakdown": {},
+  "generated_at": "2026-06-04T12:03:40.227511+00:00"
+}

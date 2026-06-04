@@ -1,8 +1,8 @@
-"""Tests for the AgentProbe core in-memory dataclasses."""
+"""Tests for the FailProbe core in-memory dataclasses."""
 
 from datetime import datetime
 
-from agentprobe.models import AgentSpan, GoldenCase, ToolCall
+from failprobe.models import AgentSpan, GoldenCase, ToolCall
 
 
 def test_agentspan_defaults() -> None:

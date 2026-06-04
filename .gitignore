@@ -13,9 +13,9 @@ env/
 .ruff_cache/
 .mypy_cache/
 
-# AgentProbe
-agentprobe.db
-agentprobe_report.json
+# FailProbe
+failprobe.db
+failprobe_report.json
 .env
 
 # Node / Next.js

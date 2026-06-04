@@ -12,10 +12,10 @@ from uuid import uuid4
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import select
 
-from agentprobe.evaluator import GoldenDatasetManager
-from agentprobe.models import GoldenCase
-from agentprobe.storage import get_session
-from agentprobe.storage.models import ReviewQueueItem, Run, ToolCallRecord
+from failprobe.evaluator import GoldenDatasetManager
+from failprobe.models import GoldenCase
+from failprobe.storage import get_session
+from failprobe.storage.models import ReviewQueueItem, Run, ToolCallRecord
 from api.routes._common import span_from_run
 from api.schemas import (
     GoldenCaseSchema,

@@ -1,4 +1,4 @@
-"""Tests for the AgentProbe rule-based classifier layer.
+"""Tests for the FailProbe rule-based classifier layer.
 
 Covers the taxonomy, every ``FailureType``, the four rule sub-modules, the
 ``classify`` priority order, and edge cases. Factories come from ``conftest``.
@@ -6,16 +6,16 @@ Covers the taxonomy, every ``FailureType``, the four rule sub-modules, the
 
 from conftest import make_span, make_tool_call
 
-from agentprobe.classifier import FAILURE_DESCRIPTIONS, FailureType
-from agentprobe.classifier.classifier import FailureClassifier
-from agentprobe.classifier.rules.context import detect_context_overflow
-from agentprobe.classifier.rules.hallucination import detect_hallucinated_calls
-from agentprobe.classifier.rules.loop_detector import detect_loop
-from agentprobe.classifier.rules.tool_errors import classify_tool_error
-from agentprobe.classifier.taxonomy import (
+from failprobe.classifier import FAILURE_DESCRIPTIONS, FailureType
+from failprobe.classifier.classifier import FailureClassifier
+from failprobe.classifier.rules.context import detect_context_overflow
+from failprobe.classifier.rules.hallucination import detect_hallucinated_calls
+from failprobe.classifier.rules.loop_detector import detect_loop
+from failprobe.classifier.rules.tool_errors import classify_tool_error
+from failprobe.classifier.taxonomy import (
     FAILURE_DESCRIPTIONS as TAXONOMY_DESCRIPTIONS,
 )
-from agentprobe.classifier.taxonomy import (
+from failprobe.classifier.taxonomy import (
     FailureType as TaxonomyFailureType,
 )
 

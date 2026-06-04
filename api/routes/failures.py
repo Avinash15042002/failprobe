@@ -13,9 +13,9 @@ from typing import Optional
 from fastapi import APIRouter, Query
 from sqlalchemy import func, select
 
-from agentprobe.classifier import FAILURE_DESCRIPTIONS, FailureType
-from agentprobe.storage import get_session
-from agentprobe.storage.models import Run
+from failprobe.classifier import FAILURE_DESCRIPTIONS, FailureType
+from failprobe.storage import get_session
+from failprobe.storage.models import Run
 from api.schemas import (
     FailureBreakdownSchema,
     FailureListResponse,

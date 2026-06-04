@@ -1,4 +1,4 @@
-"""Tests for the async span emitter (``agentprobe/tracer.py``, Task 08).
+"""Tests for the async span emitter (``failprobe/tracer.py``, Task 08).
 
 Each acceptance criterion is covered: ``_emit_span`` returns without awaiting
 storage, spans land in SQLite within ~100 ms, a DB-write failure is swallowed
@@ -14,18 +14,18 @@ import asyncio
 import pytest
 from sqlalchemy import select
 
-from agentprobe import tracer
-from agentprobe.models import AgentSpan, ToolCall
-from agentprobe.storage import db
-from agentprobe.storage.db import get_session, init_db
-from agentprobe.storage.models import Run, ToolCallRecord
+from failprobe import tracer
+from failprobe.models import AgentSpan, ToolCall
+from failprobe.storage import db
+from failprobe.storage.db import get_session, init_db
+from failprobe.storage.models import Run, ToolCallRecord
 
 
 @pytest.fixture(autouse=True)
 async def _fresh_env(tmp_path, monkeypatch) -> None:
     """Fresh temp DB + reset DB/tracer singletons, then create tables."""
     db_file = tmp_path / "tracer.db"
-    monkeypatch.setenv("AGENTPROBE_DB_URL", f"sqlite+aiosqlite:///{db_file.as_posix()}")
+    monkeypatch.setenv("FAILPROBE_DB_URL", f"sqlite+aiosqlite:///{db_file.as_posix()}")
     monkeypatch.setattr(db, "_engine", None)
     monkeypatch.setattr(db, "_session_factory", None)
     monkeypatch.setattr(tracer, "_queue", asyncio.Queue())
@@ -125,7 +125,7 @@ async def test_console_success_line(capsys) -> None:
     """A successful span prints the ✓ line with the 8-char run prefix."""
     await tracer._emit_span(_span(run_id="deadbeef-1111", duration_ms=234.0))
     out = capsys.readouterr().out  # captured before any flush
-    assert "[agentprobe] run=deadbeef agent=test-agent status=✓ duration=234ms" in out
+    assert "[failprobe] run=deadbeef agent=test-agent status=✓ duration=234ms" in out
 
 
 async def test_console_failure_line(capsys) -> None:
@@ -139,7 +139,7 @@ async def test_console_failure_line(capsys) -> None:
     await tracer._emit_span(span)
     out = capsys.readouterr().out
     assert (
-        "[agentprobe] run=cafebabe agent=test-agent "
+        "[failprobe] run=cafebabe agent=test-agent "
         "status=✗ failure=INFINITE_LOOP duration=1203ms" in out
     )
 
@@ -156,7 +156,7 @@ async def test_console_degrades_when_stream_cannot_encode(monkeypatch) -> None:
 
     await tracer._emit_span(_span(run_id="deadbeef-9999"))
     out = "".join(written)
-    assert "[agentprobe] run=deadbeef agent=test-agent status=" in out
+    assert "[failprobe] run=deadbeef agent=test-agent status=" in out
     assert "✓" not in out  # the unencodable glyph was replaced
     # The span was still enqueued and persists despite the print failure.
     await asyncio.sleep(0.2)
@@ -165,9 +165,9 @@ async def test_console_degrades_when_stream_cannot_encode(monkeypatch) -> None:
 
 async def test_console_suppressed_when_disabled(capsys, monkeypatch) -> None:
     """No console line is printed when ``emit_console`` is False."""
-    from agentprobe.config import ProbeConfig, configure
+    from failprobe.config import ProbeConfig, configure
 
-    monkeypatch.setattr("agentprobe.tracer.get_config", lambda: ProbeConfig(emit_console=False))
+    monkeypatch.setattr("failprobe.tracer.get_config", lambda: ProbeConfig(emit_console=False))
     configure(ProbeConfig(emit_console=False))
     await tracer._emit_span(_span())
     assert capsys.readouterr().out == ""

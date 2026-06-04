@@ -2,7 +2,7 @@
 
 Manages ``GoldenCase`` records — human-labelled spans used as ground truth for
 meta-evaluation. The dataset is a JSONL file owned by
-:class:`~agentprobe.evaluator.GoldenDatasetManager`; these routes are a thin HTTP
+:class:`~failprobe.evaluator.GoldenDatasetManager`; these routes are a thin HTTP
 layer over it and hold no serialization logic of their own.
 """
 
@@ -10,7 +10,7 @@ import dataclasses
 
 from fastapi import APIRouter, HTTPException
 
-from agentprobe.evaluator import GoldenDatasetManager
+from failprobe.evaluator import GoldenDatasetManager
 from api.schemas import (
     GoldenCaseCreate,
     GoldenCasePatch,

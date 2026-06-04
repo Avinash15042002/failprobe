@@ -1,5 +1,5 @@
 import asyncio
-from agentprobe import probe
+from failprobe import probe
 
 @probe(name="demo-agent")
 async def run_agent(query: str) -> str:

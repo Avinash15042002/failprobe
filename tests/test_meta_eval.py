@@ -1,4 +1,4 @@
-"""Tests for the evaluator's LLM-as-Judge (``agentprobe/evaluator/judge.py``).
+"""Tests for the evaluator's LLM-as-Judge (``failprobe/evaluator/judge.py``).
 
 Real API calls are never made: every test monkeypatches the private ``_call_llm``
 network seam to return canned text. The judge's never-raise contract, JSON
@@ -14,17 +14,17 @@ import numpy as np
 import pytest
 from sqlalchemy import func, select
 
-from agentprobe.config import ProbeConfig, configure, get_config
-from agentprobe.evaluator import judge_run, should_flag_for_review
-from agentprobe.evaluator import meta_eval as meta_eval_mod
-from agentprobe.evaluator.golden_dataset import GoldenDatasetManager
-from agentprobe.evaluator.judge import JudgeResult
-from agentprobe.evaluator import judge as judge_mod
-from agentprobe.evaluator.meta_eval import run_meta_eval
-from agentprobe.models import GoldenCase
-from agentprobe.storage import db
-from agentprobe.storage.db import get_session, init_db
-from agentprobe.storage.models import EvalResult
+from failprobe.config import ProbeConfig, configure, get_config
+from failprobe.evaluator import judge_run, should_flag_for_review
+from failprobe.evaluator import meta_eval as meta_eval_mod
+from failprobe.evaluator.golden_dataset import GoldenDatasetManager
+from failprobe.evaluator.judge import JudgeResult
+from failprobe.evaluator import judge as judge_mod
+from failprobe.evaluator.meta_eval import run_meta_eval
+from failprobe.models import GoldenCase
+from failprobe.storage import db
+from failprobe.storage.db import get_session, init_db
+from failprobe.storage.models import EvalResult
 
 from conftest import make_span, make_tool_call
 
@@ -155,7 +155,7 @@ async def test_judge_handles_openai_prefix(monkeypatch) -> None:
 async def test_judge_persists_eval_result(monkeypatch, tmp_path) -> None:
     """Every judge call is written to the ``EvalResult`` table."""
     db_file = tmp_path / "judge.db"
-    monkeypatch.setenv("AGENTPROBE_DB_URL", f"sqlite+aiosqlite:///{db_file.as_posix()}")
+    monkeypatch.setenv("FAILPROBE_DB_URL", f"sqlite+aiosqlite:///{db_file.as_posix()}")
     monkeypatch.setattr(db, "_engine", None)
     monkeypatch.setattr(db, "_session_factory", None)
     # Restore the real persistence helper (the autouse fixture stubbed it out).

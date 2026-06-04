@@ -1,18 +1,18 @@
 # Changelog
 
-All notable changes to AgentProbe are documented here. The format follows
+All notable changes to FailProbe are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.0] - 2026
+## [0.2.0] - 2026
 
-First public release.
+First stable public release under the **`failprobe`** name.
 
 ### Added
 
 - **`@probe` decorator** — wraps any `async` agent entry point, captures the
   run as an `AgentSpan`, and persists it fire-and-forget (`asyncio.create_task`)
-  so AgentProbe never blocks or alters your agent's output or exceptions.
+  so FailProbe never blocks or alters your agent's output or exceptions.
 - **Rule-based `FailureClassifier`** — classifies failures into a fixed taxonomy
   of 14 types (plus an `unknown` fallback) using only string matching,
   fingerprinting, and counters — **zero LLM or network calls**, sub-10ms.
@@ -36,6 +36,13 @@ First public release.
   verdict).
 - **Docker** — `docker compose up` brings up the API, dashboard, and PostgreSQL.
 
+### Changed
+
+- Distribution and import package renamed to **`failprobe`** (was `agentprobe`).
+  Use `pip install failprobe` and `from failprobe import probe`.
+- Environment variables renamed from `AGENTPROBE_*` to `FAILPROBE_*`
+  (e.g. `FAILPROBE_DB_URL`, `FAILPROBE_EMIT_CONSOLE`).
+
 ### Known Limitations
 
 - **Async only** — sync `@probe` support is not yet implemented.
@@ -50,4 +57,8 @@ First public release.
 - Sync `@probe` support.
 - Framework-specific integrations (e.g. LangChain callbacks).
 - A published golden dataset and headline judge-accuracy number.
-- Production PyPI release (this release ships via Test PyPI first).
+
+## [0.1.0] - 2026
+
+Initial release. Superseded by 0.2.0 and yanked from PyPI; it used the
+`agentprobe` import name, which 0.2.0 renames to `failprobe`.

@@ -20,13 +20,13 @@ from typing import Optional
 import pytest
 from sqlalchemy import select
 
-from agentprobe import probe
-from agentprobe import tracer
-from agentprobe.classifier.taxonomy import FailureType
-from agentprobe.models import ToolCall
-from agentprobe.storage import db
-from agentprobe.storage.db import get_session, init_db
-from agentprobe.storage.models import Run
+from failprobe import probe
+from failprobe import tracer
+from failprobe.classifier.taxonomy import FailureType
+from failprobe.models import ToolCall
+from failprobe.storage import db
+from failprobe.storage.db import get_session, init_db
+from failprobe.storage.models import Run
 
 pytestmark = pytest.mark.e2e
 
@@ -39,7 +39,7 @@ async def _fresh_pipeline(tmp_path, monkeypatch) -> None:
     queue and flush worker bind to this test's event loop.
     """
     db_file = tmp_path / "e2e.db"
-    monkeypatch.setenv("AGENTPROBE_DB_URL", f"sqlite+aiosqlite:///{db_file.as_posix()}")
+    monkeypatch.setenv("FAILPROBE_DB_URL", f"sqlite+aiosqlite:///{db_file.as_posix()}")
     monkeypatch.setattr(db, "_engine", None)
     monkeypatch.setattr(db, "_session_factory", None)
     monkeypatch.setattr(tracer, "_queue", asyncio.Queue())

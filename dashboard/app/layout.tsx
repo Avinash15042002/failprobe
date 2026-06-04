@@ -6,7 +6,7 @@ import { Topbar } from "@/components/topbar";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AgentProbe",
+  title: "FailProbe",
   description: "LLM agent failure classifier, meta-evaluator, and regression CI.",
 };
 

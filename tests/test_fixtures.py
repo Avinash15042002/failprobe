@@ -1,8 +1,8 @@
 """Verify the JSON fixtures in ``tests/fixtures/`` deserialize into ``AgentSpan``.
 
 TASK 16 item 2: all five fixture files must be present, valid JSON, and
-round-trip into a real :class:`~agentprobe.models.AgentSpan` (with its nested
-``tool_calls`` rebuilt into :class:`~agentprobe.models.ToolCall` objects)
+round-trip into a real :class:`~failprobe.models.AgentSpan` (with its nested
+``tool_calls`` rebuilt into :class:`~failprobe.models.ToolCall` objects)
 without raising.
 """
 
@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-from agentprobe.models import AgentSpan, ToolCall
+from failprobe.models import AgentSpan, ToolCall
 
 FIXTURES_DIR = Path(__file__).resolve().parent / "fixtures"
 

@@ -7,22 +7,22 @@ low-confidence, and returns the persisted :class:`EvalResult`.
 returns a :class:`MetaEvalReport`, or signals that no golden dataset exists yet.
 
 This module is a thin HTTP layer: all judging/meta-eval logic lives in
-``agentprobe.evaluator``.
+``failprobe.evaluator``.
 """
 
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import select
 
-from agentprobe.config import get_config
-from agentprobe.evaluator import (
+from failprobe.config import get_config
+from failprobe.evaluator import (
     GoldenDatasetManager,
     default_rubric,
     judge_run,
     run_meta_eval,
     should_flag_for_review,
 )
-from agentprobe.storage import get_session
-from agentprobe.storage.models import EvalResult, ReviewQueueItem, Run, ToolCallRecord
+from failprobe.storage import get_session
+from failprobe.storage.models import EvalResult, ReviewQueueItem, Run, ToolCallRecord
 from api.routes._common import span_from_run
 from api.schemas import EvalResultSchema, EvalRunRequest, MetaEvalReportSchema
 

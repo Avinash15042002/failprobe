@@ -1,7 +1,7 @@
-"""Pydantic v2 response and request schemas for the AgentProbe REST API.
+"""Pydantic v2 response and request schemas for the FailProbe REST API.
 
 This module contains *only* API-facing data shapes and the small converters
-that map a persisted ORM row (``agentprobe.storage.models``) onto its public
+that map a persisted ORM row (``failprobe.storage.models``) onto its public
 schema. It holds no business logic and performs no I/O.
 
 JSON-serialized ORM columns (``tags`` on :class:`Run`, ``params`` on
@@ -16,9 +16,9 @@ from uuid import uuid4
 
 from pydantic import BaseModel, ConfigDict
 
-from agentprobe.evaluator.meta_eval import MetaEvalReport
-from agentprobe.models import AgentSpan, GoldenCase, ToolCall
-from agentprobe.storage.models import EvalResult, Run, ToolCallRecord
+from failprobe.evaluator.meta_eval import MetaEvalReport
+from failprobe.models import AgentSpan, GoldenCase, ToolCall
+from failprobe.storage.models import EvalResult, Run, ToolCallRecord
 
 _Difficulty = Literal["easy", "medium", "hard", "adversarial"]
 
@@ -238,7 +238,7 @@ class ToolCallSpanSchema(BaseModel):
     """A tool call as embedded in an :class:`AgentSpanSchema`.
 
     Distinct from :class:`ToolCallSchema` (a persisted ``ToolCallRecord`` row):
-    this mirrors the in-memory :class:`~agentprobe.models.ToolCall` dataclass and
+    this mirrors the in-memory :class:`~failprobe.models.ToolCall` dataclass and
     carries no DB identifiers. ``result`` is ``Any`` per the dataclass contract.
     """
 
@@ -251,7 +251,7 @@ class ToolCallSpanSchema(BaseModel):
 
 
 class AgentSpanSchema(BaseModel):
-    """An in-memory agent run, mirroring the :class:`~agentprobe.models.AgentSpan` dataclass.
+    """An in-memory agent run, mirroring the :class:`~failprobe.models.AgentSpan` dataclass.
 
     ``input`` and ``output`` are ``Any`` because the underlying dataclass accepts
     arbitrary payloads.

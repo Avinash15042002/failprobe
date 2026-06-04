@@ -1,4 +1,4 @@
-"""Tests for the ``@probe`` decorator (``agentprobe/decorator.py``).
+"""Tests for the ``@probe`` decorator (``failprobe/decorator.py``).
 
 Verifies transparency (return value and exceptions pass through unchanged),
 non-blocking fire-and-forget emission via ``asyncio.create_task``, internal
@@ -14,9 +14,9 @@ import asyncio
 
 import pytest
 
-from agentprobe import probe
-from agentprobe.classifier.taxonomy import FailureType
-from agentprobe.models import ToolCall
+from failprobe import probe
+from failprobe.classifier.taxonomy import FailureType
+from failprobe.models import ToolCall
 
 
 @pytest.fixture
@@ -27,7 +27,7 @@ def emitted(monkeypatch):
     async def fake_emit(span) -> None:
         spans.append(span)
 
-    monkeypatch.setattr("agentprobe.decorator._emit_span", fake_emit)
+    monkeypatch.setattr("failprobe.decorator._emit_span", fake_emit)
     return spans
 
 
@@ -90,12 +90,12 @@ async def test_emission_is_fire_and_forget(emitted) -> None:
 # Internal error isolation
 # --------------------------------------------------------------------------- #
 async def test_internal_error_does_not_propagate(monkeypatch, emitted) -> None:
-    """A crash inside AgentProbe's recording path never reaches the caller."""
+    """A crash inside FailProbe's recording path never reaches the caller."""
 
     def boom(span):
         raise RuntimeError("classifier exploded")
 
-    monkeypatch.setattr("agentprobe.decorator._CLASSIFIER.classify", boom)
+    monkeypatch.setattr("failprobe.decorator._CLASSIFIER.classify", boom)
 
     @probe(name="resilient")
     async def run(q: str) -> str:
@@ -111,7 +111,7 @@ async def test_internal_error_still_reraises_user_exception(monkeypatch, emitted
     def boom(span):
         raise RuntimeError("classifier exploded")
 
-    monkeypatch.setattr("agentprobe.decorator._CLASSIFIER.classify", boom)
+    monkeypatch.setattr("failprobe.decorator._CLASSIFIER.classify", boom)
 
     @probe(name="resilient")
     async def run(q: str) -> str:
@@ -234,7 +234,7 @@ async def test_tags_merged_into_metadata(emitted) -> None:
 # --------------------------------------------------------------------------- #
 def test_public_exports() -> None:
     """The package exports exactly ``probe``, ``ProbeConfig``, ``configure``."""
-    import agentprobe
+    import failprobe
 
-    assert set(agentprobe.__all__) == {"probe", "ProbeConfig", "configure"}
-    assert callable(agentprobe.probe)
+    assert set(failprobe.__all__) == {"probe", "ProbeConfig", "configure"}
+    assert callable(failprobe.probe)

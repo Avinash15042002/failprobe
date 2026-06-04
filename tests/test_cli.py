@@ -1,4 +1,4 @@
-"""Tests for the AgentProbe CLI (``agentprobe/cli/main.py``).
+"""Tests for the FailProbe CLI (``failprobe/cli/main.py``).
 
 Every command is exercised through Typer's :class:`CliRunner`. The CLI's seams —
 the two HTTP helpers (``_api_get`` / ``_api_post``), the package functions it
@@ -13,10 +13,10 @@ from datetime import datetime, timezone
 
 from typer.testing import CliRunner
 
-from agentprobe.cli import main as cli_main
-from agentprobe.cli.main import app
-from agentprobe.evaluator.meta_eval import MetaEvalReport
-from agentprobe.regression.runner import RegressionResult
+from failprobe.cli import main as cli_main
+from failprobe.cli.main import app
+from failprobe.evaluator.meta_eval import MetaEvalReport
+from failprobe.regression.runner import RegressionResult
 
 runner = CliRunner()
 

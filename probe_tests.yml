@@ -1,6 +1,6 @@
-# AgentProbe regression suite for the demo weather/booking agent.
+# FailProbe regression suite for the demo weather/booking agent.
 #
-# The runner (agentprobe/regression/runner.py) dynamically imports
+# The runner (failprobe/regression/runner.py) dynamically imports
 # `agent_module:agent_function`, runs every case, and scores each as pass/fail:
 #   - every string in `expected_contains` must appear in the agent's output, AND
 #   - every tool in `expected_tool_calls` (if given) must have been called.

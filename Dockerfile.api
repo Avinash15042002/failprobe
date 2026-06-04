@@ -12,9 +12,9 @@ RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 # `api` is a plain top-level dir (not in the wheel), so it ships as source; the
-# `agentprobe` package is installed into the venv via the project install.
+# `failprobe` package is installed into the venv via the project install.
 COPY pyproject.toml README.md ./
-COPY agentprobe/ agentprobe/
+COPY failprobe/ failprobe/
 COPY api/ api/
 COPY alembic.ini ./
 # Include the Postgres driver (asyncpg) so the prod compose can point at Postgres.
@@ -26,8 +26,8 @@ WORKDIR /app
 
 ENV PATH="/opt/venv/bin:$PATH" \
     PYTHONUNBUFFERED=1 \
-    AGENTPROBE_DB_URL=sqlite+aiosqlite:////app/data/agentprobe.db \
-    AGENTPROBE_EMIT_CONSOLE=true
+    FAILPROBE_DB_URL=sqlite+aiosqlite:////app/data/failprobe.db \
+    FAILPROBE_EMIT_CONSOLE=true
 
 # Unprivileged user; /app/data holds the SQLite file and must be writable by it.
 RUN useradd --create-home --uid 1000 probe \

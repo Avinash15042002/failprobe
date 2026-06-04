@@ -1,5 +1,5 @@
 {
-  "name": "agentprobe-dashboard",
+  "name": "failprobe-dashboard",
   "version": "0.1.0",
   "private": true,
   "scripts": {

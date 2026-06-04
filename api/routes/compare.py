@@ -2,7 +2,7 @@
 
 ``POST /compare`` computes a statistically honest delta between a baseline and a
 candidate set of runs for one metric (accuracy, judge score, or cost). All
-statistics are delegated to the regression layer (``agentprobe/regression``) —
+statistics are delegated to the regression layer (``failprobe/regression``) —
 this route only fetches rows, projects them onto the chosen metric, and shapes
 the response (Rule: the API embeds no statistical business logic).
 
@@ -20,10 +20,10 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import select
 
-from agentprobe.regression.runner import COST_PER_1K_TOKENS
-from agentprobe.regression.stats import bootstrap_ci, mcnemar_test
-from agentprobe.storage import get_session
-from agentprobe.storage.models import EvalResult, Run
+from failprobe.regression.runner import COST_PER_1K_TOKENS
+from failprobe.regression.stats import bootstrap_ci, mcnemar_test
+from failprobe.storage import get_session
+from failprobe.storage.models import EvalResult, Run
 from api.schemas import CompareRequest, CompareResponse
 
 router = APIRouter(tags=["compare"])

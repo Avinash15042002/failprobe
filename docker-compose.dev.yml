@@ -1,4 +1,4 @@
-# AgentProbe — dev stack (SQLite). Self-hostable: no external services.
+# FailProbe — dev stack (SQLite). Self-hostable: no external services.
 # Usage: docker compose -f docker-compose.dev.yml up --build
 # The default docker-compose.yml is the Postgres prod stack (see TASK 17/18).
 services:
@@ -9,8 +9,8 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - AGENTPROBE_DB_URL=sqlite+aiosqlite:////app/data/agentprobe.db
-      - AGENTPROBE_EMIT_CONSOLE=true
+      - FAILPROBE_DB_URL=sqlite+aiosqlite:////app/data/failprobe.db
+      - FAILPROBE_EMIT_CONSOLE=true
     volumes:
       # Named volume keeps the SQLite DB across restarts and survives a rebuild.
       - probe-data:/app/data

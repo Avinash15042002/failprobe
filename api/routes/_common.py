@@ -1,9 +1,9 @@
 """Shared route helpers for reconstructing domain objects from ORM rows.
 
 The judge and meta-evaluator operate on the in-memory
-:class:`~agentprobe.models.AgentSpan` dataclass, but persisted runs live as
-:class:`~agentprobe.storage.models.Run` rows plus their
-:class:`~agentprobe.storage.models.ToolCallRecord` rows. This module bridges the
+:class:`~failprobe.models.AgentSpan` dataclass, but persisted runs live as
+:class:`~failprobe.storage.models.Run` rows plus their
+:class:`~failprobe.storage.models.ToolCallRecord` rows. This module bridges the
 two so the eval and review routes don't duplicate the mapping. It is pure
 transformation — no I/O.
 """
@@ -11,8 +11,8 @@ transformation — no I/O.
 import json
 from typing import Any
 
-from agentprobe.models import AgentSpan, ToolCall
-from agentprobe.storage.models import Run, ToolCallRecord
+from failprobe.models import AgentSpan, ToolCall
+from failprobe.storage.models import Run, ToolCallRecord
 
 
 def maybe_json(raw: str | None) -> Any:

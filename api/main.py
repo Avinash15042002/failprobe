@@ -1,8 +1,8 @@
-"""AgentProbe REST API application.
+"""FailProbe REST API application.
 
 Wires together the route modules, CORS, lifespan-driven DB initialization, a
 standardized error envelope, and optional API-key auth. The API is a thin HTTP
-layer: it imports behavior from the ``agentprobe`` package and contains no
+layer: it imports behavior from the ``failprobe`` package and contains no
 business logic of its own.
 """
 
@@ -15,10 +15,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from agentprobe.storage import init_db
+from failprobe.storage import init_db
 from api.routes import compare, eval, failures, golden, review, runs
 
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 
 # Paths that never require an API key (and never need the DB).
 _AUTH_EXEMPT = frozenset({"/health", "/docs", "/redoc", "/openapi.json"})
@@ -34,7 +34,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     yield
 
 
-app = FastAPI(title="AgentProbe API", version=VERSION, lifespan=lifespan)
+app = FastAPI(title="FailProbe API", version=VERSION, lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -49,11 +49,11 @@ app.add_middleware(
 async def api_key_auth(request: Request, call_next):
     """Require ``X-API-Key`` on non-exempt routes when an API key is configured.
 
-    Auth is disabled entirely unless ``AGENTPROBE_API_KEY`` is set in the
+    Auth is disabled entirely unless ``FAILPROBE_API_KEY`` is set in the
     environment. When set, any non-exempt request missing or mismatching the
     ``X-API-Key`` header is rejected with the standard 401 error envelope.
     """
-    api_key = os.environ.get("AGENTPROBE_API_KEY")
+    api_key = os.environ.get("FAILPROBE_API_KEY")
     if api_key and request.url.path not in _AUTH_EXEMPT:
         if request.headers.get("X-API-Key") != api_key:
             return JSONResponse(

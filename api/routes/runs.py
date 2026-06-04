@@ -10,8 +10,8 @@ from typing import Literal, Optional
 from fastapi import APIRouter, HTTPException, Query
 from sqlalchemy import func, select
 
-from agentprobe.storage import get_session
-from agentprobe.storage.models import EvalResult, Run, ToolCallRecord
+from failprobe.storage import get_session
+from failprobe.storage.models import EvalResult, Run, ToolCallRecord
 from api.schemas import (
     EvalResultSchema,
     RunDetailResponse,

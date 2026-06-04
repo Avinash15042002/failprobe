@@ -1,4 +1,4 @@
-"""Tests for the AgentProbe storage layer (ORM models + async DB engine).
+"""Tests for the FailProbe storage layer (ORM models + async DB engine).
 
 Each test runs against a fresh temporary SQLite file. The engine/session
 singletons in ``db`` are reset per test (private attributes are patched
@@ -9,9 +9,9 @@ of test ordering.
 import pytest
 from sqlalchemy import inspect, select
 
-from agentprobe.storage import db
-from agentprobe.storage.db import get_session, init_db
-from agentprobe.storage.models import (
+from failprobe.storage import db
+from failprobe.storage.db import get_session, init_db
+from failprobe.storage.models import (
     EvalResult,
     RegressionBaseline,
     Run,
@@ -25,7 +25,7 @@ ALL_TABLES = {"runs", "tool_calls", "eval_results", "regression_baselines"}
 def _fresh_db(tmp_path, monkeypatch) -> None:
     """Point storage at a fresh temp SQLite file and reset engine singletons."""
     db_file = tmp_path / "test.db"
-    monkeypatch.setenv("AGENTPROBE_DB_URL", f"sqlite+aiosqlite:///{db_file.as_posix()}")
+    monkeypatch.setenv("FAILPROBE_DB_URL", f"sqlite+aiosqlite:///{db_file.as_posix()}")
     monkeypatch.setattr(db, "_engine", None)
     monkeypatch.setattr(db, "_session_factory", None)
 
@@ -95,13 +95,13 @@ def test_foreign_keys_point_to_runs() -> None:
 
 def test_default_db_url_is_sqlite(monkeypatch) -> None:
     """With no env override, the URL falls back to the SQLite config default."""
-    monkeypatch.delenv("AGENTPROBE_DB_URL", raising=False)
+    monkeypatch.delenv("FAILPROBE_DB_URL", raising=False)
     assert db._resolve_db_url().startswith("sqlite")
 
 
 def test_env_var_overrides_config(monkeypatch) -> None:
-    """Setting AGENTPROBE_DB_URL swaps the connection (e.g. to Postgres)."""
-    monkeypatch.setenv("AGENTPROBE_DB_URL", "postgresql+asyncpg://u:p@host/db")
+    """Setting FAILPROBE_DB_URL swaps the connection (e.g. to Postgres)."""
+    monkeypatch.setenv("FAILPROBE_DB_URL", "postgresql+asyncpg://u:p@host/db")
     assert db._resolve_db_url() == "postgresql+asyncpg://u:p@host/db"
 
 

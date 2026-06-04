@@ -1,4 +1,4 @@
-"""Tests for the AgentProbe REST API.
+"""Tests for the FailProbe REST API.
 
 Each test runs the ASGI app in-process via ``httpx.AsyncClient`` +
 ``ASGITransport`` (no real network) against a fresh temporary SQLite database.
@@ -10,10 +10,10 @@ The DB singletons in ``storage.db`` are reset per test for isolation, mirroring
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 
-from agentprobe.classifier import FailureType
-from agentprobe.evaluator import judge as judge_mod
-from agentprobe.storage import db, get_session, init_db
-from agentprobe.storage.models import ReviewQueueItem, Run
+from failprobe.classifier import FailureType
+from failprobe.evaluator import judge as judge_mod
+from failprobe.storage import db, get_session, init_db
+from failprobe.storage.models import ReviewQueueItem, Run
 from api.main import app
 
 _VALID_JUDGE_JSON = '{"score": 0.8, "reasoning": "good", "confidence": 0.9, "key_issues": []}'
@@ -23,8 +23,8 @@ _VALID_JUDGE_JSON = '{"score": 0.8, "reasoning": "good", "confidence": 0.9, "key
 async def client(tmp_path, monkeypatch) -> AsyncClient:
     """Yield an AsyncClient bound to the app over a fresh temp SQLite DB."""
     db_file = tmp_path / "test.db"
-    monkeypatch.setenv("AGENTPROBE_DB_URL", f"sqlite+aiosqlite:///{db_file.as_posix()}")
-    monkeypatch.delenv("AGENTPROBE_API_KEY", raising=False)
+    monkeypatch.setenv("FAILPROBE_DB_URL", f"sqlite+aiosqlite:///{db_file.as_posix()}")
+    monkeypatch.delenv("FAILPROBE_API_KEY", raising=False)
     monkeypatch.setattr(db, "_engine", None)
     monkeypatch.setattr(db, "_session_factory", None)
     await init_db()
@@ -54,7 +54,7 @@ async def test_health(client: AsyncClient) -> None:
     """``GET /health`` returns 200 with status and version."""
     resp = await client.get("/health")
     assert resp.status_code == 200
-    assert resp.json() == {"status": "ok", "version": "0.1.0"}
+    assert resp.json() == {"status": "ok", "version": "0.2.0"}
 
 
 async def test_list_runs_empty(client: AsyncClient) -> None:
@@ -287,10 +287,10 @@ async def test_review_missing_run_404(client: AsyncClient, monkeypatch, tmp_path
 
 
 async def test_auth_required_when_key_set(tmp_path, monkeypatch) -> None:
-    """With ``AGENTPROBE_API_KEY`` set, non-health routes require the header."""
+    """With ``FAILPROBE_API_KEY`` set, non-health routes require the header."""
     db_file = tmp_path / "auth.db"
-    monkeypatch.setenv("AGENTPROBE_DB_URL", f"sqlite+aiosqlite:///{db_file.as_posix()}")
-    monkeypatch.setenv("AGENTPROBE_API_KEY", "secret")
+    monkeypatch.setenv("FAILPROBE_DB_URL", f"sqlite+aiosqlite:///{db_file.as_posix()}")
+    monkeypatch.setenv("FAILPROBE_API_KEY", "secret")
     monkeypatch.setattr(db, "_engine", None)
     monkeypatch.setattr(db, "_session_factory", None)
     await init_db()

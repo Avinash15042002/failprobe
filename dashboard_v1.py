@@ -1,7 +1,7 @@
-"""AgentProbe Streamlit dashboard (v1, temporary).
+"""FailProbe Streamlit dashboard (v1, temporary).
 
 A single-file Streamlit app that visualises run history and failure breakdowns
-by polling the local AgentProbe REST API. This is the Month 1 throwaway; it will
+by polling the local FailProbe REST API. This is the Month 1 throwaway; it will
 be removed once the Next.js dashboard (Task 11) ships. It performs no direct
 database access — every datum comes from the HTTP API.
 
@@ -25,7 +25,7 @@ _TIMEOUT_SECONDS = 5.0
 
 
 class APIUnreachable(Exception):
-    """Raised when the AgentProbe API cannot be reached or returns an error."""
+    """Raised when the FailProbe API cannot be reached or returns an error."""
 
 
 @st.cache_data(ttl=5)
@@ -153,8 +153,8 @@ def _run_detail_section(runs: list[dict], breakdown: dict[str, dict]) -> None:
 
 def main() -> None:
     """Compose the dashboard: sidebar filters plus the three sections."""
-    st.set_page_config(page_title="AgentProbe — Run Monitor", layout="wide")
-    st.title("AgentProbe — Run Monitor")
+    st.set_page_config(page_title="FailProbe — Run Monitor", layout="wide")
+    st.title("FailProbe — Run Monitor")
 
     st.sidebar.header("Filters")
     agent_name = st.sidebar.text_input("Agent name", value="")

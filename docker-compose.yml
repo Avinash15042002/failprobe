@@ -1,8 +1,8 @@
-# AgentProbe — Month 4 prod stack (PostgreSQL). Three services: db, api, dashboard.
+# FailProbe — Month 4 prod stack (PostgreSQL). Three services: db, api, dashboard.
 # For the lightweight SQLite dev stack use: docker compose -f docker-compose.dev.yml up
 #
-# Note: the API resolves its database from AGENTPROBE_DB_URL (see
-# agentprobe/storage/db.py), so the Postgres URL is passed via that variable —
+# Note: the API resolves its database from FAILPROBE_DB_URL (see
+# failprobe/storage/db.py), so the Postgres URL is passed via that variable —
 # TASK_17's DATABASE_URL placeholder is intentionally superseded here.
 services:
   db:
@@ -10,11 +10,11 @@ services:
     environment:
       POSTGRES_USER: probe
       POSTGRES_PASSWORD: probe
-      POSTGRES_DB: agentprobe
+      POSTGRES_DB: failprobe
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U probe -d agentprobe"]
+      test: ["CMD-SHELL", "pg_isready -U probe -d failprobe"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -27,8 +27,8 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - AGENTPROBE_DB_URL=postgresql+asyncpg://probe:probe@db:5432/agentprobe
-      - AGENTPROBE_EMIT_CONSOLE=true
+      - FAILPROBE_DB_URL=postgresql+asyncpg://probe:probe@db:5432/failprobe
+      - FAILPROBE_EMIT_CONSOLE=true
     depends_on:
       db:
         condition: service_healthy

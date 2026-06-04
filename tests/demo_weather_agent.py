@@ -18,8 +18,8 @@ which tools the agent invoked.
 import time
 from typing import Any, Optional
 
-from agentprobe import probe
-from agentprobe.models import ToolCall
+from failprobe import probe
+from failprobe.models import ToolCall
 
 # Tiny canned knowledge bases — enough to make the demo answers concrete.
 _WEATHER = {

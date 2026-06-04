@@ -1,10 +1,10 @@
-"""Shared test fixtures and factories for the AgentProbe test suite.
+"""Shared test fixtures and factories for the FailProbe test suite.
 
 ``make_span`` and ``make_tool_call`` are the canonical factories used across
 ``test_classifier.py`` and later test modules (spec: TASK_16_test_suite.md).
 """
 
-from agentprobe.models import AgentSpan, ToolCall
+from failprobe.models import AgentSpan, ToolCall
 
 
 def make_span(**kwargs) -> AgentSpan:

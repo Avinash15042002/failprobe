@@ -1,5 +1,5 @@
 /**
- * Typed API client for the AgentProbe REST API.
+ * Typed API client for the FailProbe REST API.
  *
  * The TypeScript interfaces below mirror the Pydantic response schemas in
  * `api/schemas.py` exactly. This module is the single source of the base URL

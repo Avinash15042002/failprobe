@@ -1,4 +1,4 @@
-"""Tests for the regression layer (``agentprobe/regression/``).
+"""Tests for the regression layer (``failprobe/regression/``).
 
 Covers the statistical primitives (``bootstrap_ci``, ``mcnemar_test``,
 ``is_regression``) against the spec's acceptance criteria, plus two end-to-end
@@ -18,11 +18,11 @@ import numpy as np
 import pytest
 import yaml
 
-from agentprobe.regression.baseline import list_baselines, load_baseline, save_baseline
-from agentprobe.regression.runner import run_suite, snapshot_baseline
-from agentprobe.regression.stats import bootstrap_ci, is_regression, mcnemar_test
-from agentprobe.storage import db
-from agentprobe.storage.db import init_db
+from failprobe.regression.baseline import list_baselines, load_baseline, save_baseline
+from failprobe.regression.runner import run_suite, snapshot_baseline
+from failprobe.regression.stats import bootstrap_ci, is_regression, mcnemar_test
+from failprobe.storage import db
+from failprobe.storage.db import init_db
 
 PROBE_TESTS_YML = Path(__file__).resolve().parent.parent / "probe_tests.yml"
 
@@ -31,7 +31,7 @@ PROBE_TESTS_YML = Path(__file__).resolve().parent.parent / "probe_tests.yml"
 def _fresh_db(tmp_path, monkeypatch) -> None:
     """Point storage at a fresh temp SQLite file and reset engine singletons."""
     db_file = tmp_path / "test.db"
-    monkeypatch.setenv("AGENTPROBE_DB_URL", f"sqlite+aiosqlite:///{db_file.as_posix()}")
+    monkeypatch.setenv("FAILPROBE_DB_URL", f"sqlite+aiosqlite:///{db_file.as_posix()}")
     monkeypatch.setattr(db, "_engine", None)
     monkeypatch.setattr(db, "_session_factory", None)
 
