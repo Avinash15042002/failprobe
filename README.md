@@ -7,10 +7,11 @@
 *A rule-based failure classifier, a meta-evaluator that scores your evaluator, and a statistically honest regression CI — in one library.*
 
 [![CI](https://github.com/Avinash15042002/AgentProbe/actions/workflows/eval.yml/badge.svg)](https://github.com/Avinash15042002/AgentProbe/actions/workflows/eval.yml)
-[![Python](https://img.shields.io/badge/python-3.11%2B-blue?logo=python&logoColor=white)](https://www.python.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![PyPI](https://img.shields.io/pypi/v/agentprobe)](https://pypi.org/project/agentprobe/)
+[![Python](https://img.shields.io/pypi/pyversions/agentprobe)](https://pypi.org/project/agentprobe/)
+[![License: MIT](https://img.shields.io/github/license/Avinash15042002/AgentProbe)](LICENSE)
 [![Code style: Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-![Tests](https://img.shields.io/badge/tests-118%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/tests-139%20passing-brightgreen)
 ![Type checked](https://img.shields.io/badge/types-pydantic%20v2-ff69b4)
 
 </div>
@@ -32,6 +33,21 @@
 
 ---
 
+## 📦 Install
+
+```bash
+pip install agentprobe
+```
+
+PostgreSQL and dashboard extras are optional:
+
+```bash
+pip install "agentprobe[postgres]"    # asyncpg driver for Postgres
+pip install "agentprobe[dashboard]"   # Streamlit dashboard
+```
+
+---
+
 ## 🚀 How it works in 3 lines
 
 ```python
@@ -43,6 +59,26 @@ async def run_agent(query: str) -> str:
 ```
 
 That's it. AgentProbe captures the run, classifies any failure with **zero LLM calls**, persists it fire-and-forget (never blocking your agent), and surfaces it in the dashboard.
+
+<details>
+<summary><b>▶︎ Runnable end-to-end (copy-paste)</b></summary>
+
+<br>
+
+```python
+import asyncio
+from agentprobe import probe
+
+@probe(name="demo-agent")
+async def run_agent(query: str) -> str:
+    return f"Handled: {query}"
+
+print(asyncio.run(run_agent("what's the weather in Delhi?")))
+# -> Handled: what's the weather in Delhi?
+# The run is classified and persisted to ./agentprobe.db without blocking.
+```
+
+</details>
 
 ---
 
@@ -169,6 +205,67 @@ AgentProbe's flagship capability answers *"how accurate is your LLM judge?"* by 
 
 ---
 
+## 🖥️ Dashboard
+
+The Next.js dashboard gives you an **Overview** page (runs table, pass rate, and
+failure-type breakdown) and a **run-detail** view that surfaces the classified
+failure — e.g. an `INFINITE_LOOP` card with the repeated tool call that tripped
+it. Launch the API and dashboard together with one command:
+
+```bash
+probe dashboard            # API on :8000, dashboard on http://localhost:3000
+```
+
+<!-- TODO: embed docs/dashboard-overview.png once a screenshot is captured. -->
+
+---
+
+## ⌨️ CLI reference
+
+Installing the package exposes the `probe` command (6 commands, all rendered with `rich`):
+
+| Command | What it does |
+|---|---|
+| `probe run --suite probe_tests.yml [--fail-on-regression]` | Run a YAML test suite, write a JSON report, and summarise pass/fail + regression. Exits `1` only on a confirmed (over-threshold **and** significant) regression. |
+| `probe report --last 5 [--agent NAME] [--format table\|json]` | Summarise the most recent runs from the live API as a rich table. |
+| `probe compare --baseline IDS --candidate IDS [--metric accuracy\|score\|cost]` | Compare two run sets on one metric, with CI bounds and a significance verdict. |
+| `probe baseline save --name main [--suite ...]` | Run a suite and snapshot its metrics as a named regression baseline. |
+| `probe baseline list` | List saved regression baselines (latest snapshot per name). |
+| `probe meta-eval --golden agentprobe_golden.jsonl [--model ...]` | Score the LLM judge against a golden dataset and show accuracy ± CI. |
+| `probe dashboard [--port 3000] [--api-port 8000]` | Start the FastAPI server and the Next.js dashboard together. |
+
+Run `probe --help` (or `probe <command> --help`) for the full option list.
+
+---
+
+## ⚙️ Configuration
+
+Zero configuration works out of the box. Override once via `configure(ProbeConfig(...))`
+before using `@probe`, or per-field through environment variables.
+
+| `ProbeConfig` field | Default | Env override | Description |
+|---|---|---|---|
+| `db_url` | `sqlite+aiosqlite:///agentprobe.db` | `AGENTPROBE_DB_URL` | SQLAlchemy async DB URL where spans are persisted. |
+| `api_url` | `None` | `AGENTPROBE_API_URL` | If set, spans are POSTed to a remote API instead of stored locally. |
+| `judge_model` | `claude-haiku-4` | `AGENTPROBE_JUDGE_MODEL` | Model identifier used by the LLM judge. |
+| `judge_timeout` | `10.0` | — | Max seconds to wait for a single judge call. |
+| `loop_threshold` | `3` | `AGENTPROBE_LOOP_THRESHOLD` | Repeated tool calls before `INFINITE_LOOP` fires. |
+| `token_overflow_threshold` | `120000` | — | Token count above which `CONTEXT_OVERFLOW` is flagged. |
+| `emit_console` | `True` | `AGENTPROBE_EMIT_CONSOLE` | Echo each span to the console. |
+| `tags` | `{}` | — | Default tags merged into every recorded run. |
+
+```python
+from agentprobe import configure, ProbeConfig
+
+configure(ProbeConfig(db_url="postgresql+asyncpg://probe:probe@localhost/agentprobe"))
+```
+
+> `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` are read from the environment and are
+> required only when running the LLM judge. `AGENTPROBE_API_KEY` optionally
+> protects the FastAPI server.
+
+---
+
 ## 🛠️ Local setup
 
 ```bash
@@ -187,7 +284,7 @@ pytest -q                       # 118 passing
 uvicorn api.main:app --reload   # http://localhost:8000/docs
 ```
 
-> 📦 PyPI publishing (`pip install agentprobe`) is planned for TASK 18.
+> 📦 Released on PyPI — `pip install agentprobe` (see [Install](#-install)).
 
 ---
 
@@ -202,14 +299,22 @@ uvicorn api.main:app --reload   # http://localhost:8000/docs
 | Regression CI (stats · baseline · runner · alert) | `agentprobe/regression/` | ✅ |
 | FastAPI server | `api/` | ✅ |
 | Next.js dashboard | `dashboard/` | 🚧 partial |
-| Typer CLI (`probe …`) | `cli/` | ⏳ TASK 15 |
-| Docker + PyPI packaging | — | ⏳ TASK 17–18 |
+| Typer CLI (`probe …`) | `agentprobe/cli/` | ✅ |
+| Docker + PyPI packaging | — | ✅ v0.1.0 |
 
 ---
 
 ## 🧱 Built with
 
 `Python 3.11` · `Pydantic v2` · `SQLAlchemy 2.0 (async)` · `Alembic` · `FastAPI` · `scipy` + `numpy` · `Anthropic` + `OpenAI` SDKs · `Next.js 15` · `Tailwind` · `Typer` · `Ruff`
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read **[CONTRIBUTING.md](CONTRIBUTING.md)** for
+the dev setup, the layer-ownership rules, and the test/lint gates every change
+must pass. See **[CHANGELOG.md](CHANGELOG.md)** for release history.
 
 ---
 

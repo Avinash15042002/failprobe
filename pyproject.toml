@@ -6,7 +6,30 @@ build-backend = "setuptools.build_meta"
 name = "agentprobe"
 version = "0.1.0"
 description = "Failure classification and meta-evaluation for LLM agents"
+readme = "README.md"
 requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Avinash" }]
+keywords = [
+    "llm",
+    "agents",
+    "evaluation",
+    "observability",
+    "failure-classification",
+    "regression-testing",
+    "meta-evaluation",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Testing",
+    "Topic :: Software Development :: Quality Assurance",
+]
 dependencies = [
     "pydantic>=2.0",
     "sqlalchemy[asyncio]>=2.0",
@@ -25,14 +48,28 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest", "pytest-asyncio", "pre-commit", "ruff"]
+dev = ["pytest", "pytest-asyncio", "pre-commit", "ruff", "build", "twine"]
 dashboard = ["streamlit>=1.35"]
+postgres = ["asyncpg>=0.29"]
+
+[project.urls]
+Homepage = "https://github.com/Avinash15042002/AgentProbe"
+Documentation = "https://github.com/Avinash15042002/AgentProbe#readme"
+Repository = "https://github.com/Avinash15042002/AgentProbe"
+Issues = "https://github.com/Avinash15042002/AgentProbe/issues"
 
 [project.scripts]
 probe = "agentprobe.cli.main:app"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+# The end-to-end test relies on module-level singletons (tracer queue, DB
+# engine) and only passes in isolation; it is excluded from the default run and
+# invoked explicitly with `-m e2e`. A command-line `-m` overrides this default.
+addopts = "-m 'not e2e'"
+markers = [
+    "e2e: end-to-end pipeline test (decorator -> tracer -> storage); excluded from standard CI, run explicitly with -m e2e",
+]
 
 [tool.ruff]
 line-length = 100
