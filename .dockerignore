@@ -1,0 +1,29 @@
+# Keep the API build context small so the image builds fast on a clean cache.
+
+# Python caches / build artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Local SQLite databases (never bake these into the image)
+*.db
+*.db-journal
+*.db-wal
+
+# Frontend lives in its own image (dashboard/Dockerfile.dashboard)
+dashboard/
+
+# Tests, docs, and task/prompt files are not needed at runtime
+tests/
+*.md
+# ...but README.md is referenced by pyproject `readme` and required at build time.
+!README.md
+*prompts/
+
+# VCS / editor
+.git/
+.gitignore
+.vscode/

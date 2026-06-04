@@ -1,0 +1,11 @@
+# Keep the dashboard build context small and reproducible (npm ci uses the lockfile).
+node_modules
+.next
+out
+build
+.git
+.gitignore
+.dockerignore
+Dockerfile.dashboard
+npm-debug.log*
+.env*.local

@@ -1,0 +1,46 @@
+# syntax=docker/dockerfile:1
+
+# --- Builder: install the package + deps into an isolated virtualenv ----------
+FROM python:3.11-slim AS builder
+WORKDIR /app
+
+ENV PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# A standalone venv we can copy wholesale into the slim runtime stage.
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# `api` is a plain top-level dir (not in the wheel), so it ships as source; the
+# `agentprobe` package is installed into the venv via the project install.
+COPY pyproject.toml README.md ./
+COPY agentprobe/ agentprobe/
+COPY api/ api/
+COPY alembic.ini ./
+# Include the Postgres driver (asyncpg) so the prod compose can point at Postgres.
+RUN pip install ".[postgres]"
+
+# --- Runtime: non-root user, venv + app source only ---------------------------
+FROM python:3.11-slim AS runtime
+WORKDIR /app
+
+ENV PATH="/opt/venv/bin:$PATH" \
+    PYTHONUNBUFFERED=1 \
+    AGENTPROBE_DB_URL=sqlite+aiosqlite:////app/data/agentprobe.db \
+    AGENTPROBE_EMIT_CONSOLE=true
+
+# Unprivileged user; /app/data holds the SQLite file and must be writable by it.
+RUN useradd --create-home --uid 1000 probe \
+    && mkdir -p /app/data \
+    && chown -R probe:probe /app
+
+COPY --from=builder /opt/venv /opt/venv
+COPY --from=builder --chown=probe:probe /app/api ./api
+COPY --from=builder --chown=probe:probe /app/alembic.ini ./alembic.ini
+
+USER probe
+
+EXPOSE 8000
+
+# api.main:app resolves from the working directory (api/ ships as source here).
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
