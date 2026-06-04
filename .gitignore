@@ -13,9 +13,12 @@ env/
 .ruff_cache/
 .mypy_cache/
 
-# FailProbe
-failprobe.db
+# FailProbe — local runtime artifacts
+*.db
+*.db-journal
+*.db-wal
 failprobe_report.json
+agentprobe_report.json
 .env
 
 # Node / Next.js
