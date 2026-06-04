@@ -1,0 +1,27 @@
+name: AgentProbe Regression CI
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e ".[dev]"
+      - run: pytest tests/ -v --tb=short
+      # NOTE: switches to `probe run --suite ...` once the CLI lands in TASK 15.
+      - run: python -m agentprobe.regression.runner --suite probe_tests.yml --fail-on-regression
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          AGENTPROBE_SLACK_WEBHOOK: ${{ secrets.AGENTPROBE_SLACK_WEBHOOK }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eval-report
+          path: agentprobe_report.json
