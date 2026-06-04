@@ -1,0 +1,25 @@
+{
+  "run_id": "55555555-5555-4555-8555-555555555555",
+  "agent_name": "summarizer-agent",
+  "input": "Summarize this 900-page document.",
+  "output": "The summary was truncated before completion.",
+  "duration_ms": 9120.0,
+  "tool_calls": [
+    {
+      "tool_name": "read_document",
+      "params": {"path": "report.pdf"},
+      "result": "…(very long document text)…",
+      "duration_ms": 410.0,
+      "error": null,
+      "timestamp": 1717459420.0
+    }
+  ],
+  "tokens_used": 150000,
+  "model": "gpt-4o",
+  "success": false,
+  "failure_type": "context_overflow",
+  "failure_msg": "Token count 150000 exceeded threshold.",
+  "exception": null,
+  "timestamp": 1717459420.0,
+  "metadata": {"env": "test"}
+}

@@ -1,0 +1,49 @@
+{
+  "run_id": "33333333-3333-4333-8333-333333333333",
+  "agent_name": "research-agent",
+  "input": "Find the population of Atlantis.",
+  "output": null,
+  "duration_ms": 4820.0,
+  "tool_calls": [
+    {
+      "tool_name": "search",
+      "params": {"q": "population of Atlantis"},
+      "result": null,
+      "duration_ms": 120.0,
+      "error": null,
+      "timestamp": 1717459300.0
+    },
+    {
+      "tool_name": "search",
+      "params": {"q": "population of Atlantis"},
+      "result": null,
+      "duration_ms": 118.0,
+      "error": null,
+      "timestamp": 1717459301.0
+    },
+    {
+      "tool_name": "search",
+      "params": {"q": "population of Atlantis"},
+      "result": null,
+      "duration_ms": 122.0,
+      "error": null,
+      "timestamp": 1717459302.0
+    },
+    {
+      "tool_name": "search",
+      "params": {"q": "population of Atlantis"},
+      "result": null,
+      "duration_ms": 119.0,
+      "error": null,
+      "timestamp": 1717459303.0
+    }
+  ],
+  "tokens_used": 5100,
+  "model": "gpt-4o",
+  "success": false,
+  "failure_type": "infinite_loop",
+  "failure_msg": "Tool 'search' called 4 times with identical params.",
+  "exception": null,
+  "timestamp": 1717459303.0,
+  "metadata": {"env": "test"}
+}

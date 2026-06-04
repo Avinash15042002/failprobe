@@ -1,0 +1,16 @@
+{
+  "run_id": "44444444-4444-4444-8444-444444444444",
+  "agent_name": "weather-booking-agent",
+  "input": "Book a flight to Mars.",
+  "output": null,
+  "duration_ms": 73.9,
+  "tool_calls": [],
+  "tokens_used": null,
+  "model": "gpt-4o",
+  "success": false,
+  "failure_type": "exception",
+  "failure_msg": "Run raised an unhandled exception.",
+  "exception": "Traceback (most recent call last):\n  File \"agent.py\", line 42, in run_agent\n    raise RuntimeError(\"upstream booking API failed\")\nRuntimeError: upstream booking API failed",
+  "timestamp": 1717459360.0,
+  "metadata": {"env": "test"}
+}
