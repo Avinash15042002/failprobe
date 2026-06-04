@@ -6,10 +6,10 @@
 
 *A rule-based failure classifier, a meta-evaluator that scores your evaluator, and a statistically honest regression CI — in one library.*
 
-[![CI](https://github.com/Avinash15042002/AgentProbe/actions/workflows/eval.yml/badge.svg)](https://github.com/Avinash15042002/AgentProbe/actions/workflows/eval.yml)
+[![CI](https://github.com/Avinash15042002/failprobe/actions/workflows/eval.yml/badge.svg)](https://github.com/Avinash15042002/failprobe/actions/workflows/eval.yml)
 [![PyPI](https://img.shields.io/pypi/v/failprobe)](https://pypi.org/project/failprobe/)
 [![Python](https://img.shields.io/pypi/pyversions/failprobe)](https://pypi.org/project/failprobe/)
-[![License: MIT](https://img.shields.io/github/license/Avinash15042002/AgentProbe)](LICENSE)
+[![License: MIT](https://img.shields.io/github/license/Avinash15042002/failprobe)](LICENSE)
 [![Code style: Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
 </div>
@@ -247,8 +247,8 @@ The default `docker-compose.yml` runs PostgreSQL; a lightweight SQLite stack is 
 
 ```bash
 # 1. Clone & create a virtualenv (Python 3.11+)
-git clone https://github.com/Avinash15042002/AgentProbe.git
-cd AgentProbe
+git clone https://github.com/Avinash15042002/failprobe.git
+cd failprobe
 python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\Activate.ps1
 
 # 2. Install (editable) with dev tooling

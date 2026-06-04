@@ -6,8 +6,8 @@ setup and the gates every change must pass.
 ## Dev setup
 
 ```bash
-git clone https://github.com/Avinash15042002/AgentProbe.git
-cd AgentProbe
+git clone https://github.com/Avinash15042002/failprobe.git
+cd failprobe
 python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\Activate.ps1
 pip install -e ".[dev]"
 ```

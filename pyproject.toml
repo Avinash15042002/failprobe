@@ -53,10 +53,10 @@ dashboard = ["streamlit>=1.35"]
 postgres = ["asyncpg>=0.29"]
 
 [project.urls]
-Homepage = "https://github.com/Avinash15042002/AgentProbe"
-Documentation = "https://github.com/Avinash15042002/AgentProbe#readme"
-Repository = "https://github.com/Avinash15042002/AgentProbe"
-Issues = "https://github.com/Avinash15042002/AgentProbe/issues"
+Homepage = "https://github.com/Avinash15042002/failprobe"
+Documentation = "https://github.com/Avinash15042002/failprobe#readme"
+Repository = "https://github.com/Avinash15042002/failprobe"
+Issues = "https://github.com/Avinash15042002/failprobe/issues"
 
 [project.scripts]
 probe = "failprobe.cli.main:app"
