@@ -18,7 +18,7 @@ from typing import Optional
 
 from sqlalchemy import select
 
-from agentprobe.storage.db import get_session
+from agentprobe.storage.db import get_session, init_db
 from agentprobe.storage.models import RegressionBaseline
 
 DEFAULT_BASELINE_NAME = "main"
@@ -74,3 +74,31 @@ async def load_baseline(name: str = DEFAULT_BASELINE_NAME) -> Optional[Regressio
             .limit(1)
         )
         return result.scalar_one_or_none()
+
+
+async def list_baselines() -> list[RegressionBaseline]:
+    """Return the most recent baseline snapshot for each distinct name.
+
+    Baselines are append-only history (:func:`save_baseline` inserts a fresh row
+    on every call), so this collapses that history to one row per name — the
+    newest — ordered newest-first. This is the engine behind ``probe baseline
+    list`` (TASK 15). The database is initialized first so the command works as a
+    standalone entry point, mirroring :func:`snapshot_baseline`.
+
+    Returns:
+        One :class:`RegressionBaseline` per distinct name, newest first.
+    """
+    await init_db()
+    async with get_session() as session:
+        result = await session.execute(
+            select(RegressionBaseline).order_by(RegressionBaseline.created_at.desc())
+        )
+        rows = result.scalars().all()
+
+    seen: set[str] = set()
+    latest: list[RegressionBaseline] = []
+    for row in rows:
+        if row.name not in seen:
+            seen.add(row.name)
+            latest.append(row)
+    return latest

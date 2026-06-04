@@ -8,6 +8,7 @@ never captures spans or runs evaluations (those belong to other layers).
 from agentprobe.regression.alert import send_slack_alert
 from agentprobe.regression.baseline import (
     DEFAULT_BASELINE_NAME,
+    list_baselines,
     load_baseline,
     save_baseline,
 )
@@ -26,6 +27,7 @@ __all__ = [
     "RegressionResult",
     "bootstrap_ci",
     "is_regression",
+    "list_baselines",
     "load_baseline",
     "mcnemar_test",
     "run_suite",

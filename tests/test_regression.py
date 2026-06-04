@@ -10,13 +10,15 @@ DB-backed tests use a fresh temporary SQLite file per test, mirroring
 ``test_storage.py``.
 """
 
+import asyncio
+import json
 from pathlib import Path
 
 import numpy as np
 import pytest
 import yaml
 
-from agentprobe.regression.baseline import load_baseline, save_baseline
+from agentprobe.regression.baseline import list_baselines, load_baseline, save_baseline
 from agentprobe.regression.runner import run_suite, snapshot_baseline
 from agentprobe.regression.stats import bootstrap_ci, is_regression, mcnemar_test
 from agentprobe.storage import db
@@ -119,6 +121,23 @@ async def test_insignificant_drop_does_not_fail_build(tmp_path) -> None:
     assert result.accuracy_delta is not None and result.accuracy_delta < -0.05
     assert result.accuracy_delta_significant is False
     assert result.passed is True  # over threshold but NOT significant → no fail
+
+
+async def test_list_baselines_returns_latest_per_name() -> None:
+    """``list_baselines`` collapses append-only history to the newest row per name."""
+    await init_db()
+    await save_baseline("main", {"accuracy": 0.80}, n_runs=10)
+    await asyncio.sleep(0.01)  # ensure a strictly later created_at for the newer 'main'
+    await save_baseline("main", {"accuracy": 0.90}, n_runs=12)
+    await save_baseline("release", {"accuracy": 0.75}, n_runs=8)
+
+    rows = await list_baselines()
+
+    by_name = {row.name: row for row in rows}
+    assert set(by_name) == {"main", "release"}
+    # The newer 'main' snapshot (accuracy 0.90, n=12) wins over the older one.
+    assert json.loads(by_name["main"].metrics)["accuracy"] == 0.90
+    assert by_name["main"].n_runs == 12
 
 
 async def test_no_regression_against_own_baseline() -> None:
