@@ -103,7 +103,7 @@ async def test_judge_happy_path(monkeypatch) -> None:
     fake = _fake_llm(_VALID_JSON)
     monkeypatch.setattr(judge_mod, "_call_llm", fake)
 
-    result = await judge_run(make_span(run_id="r3"), _RUBRIC)
+    result = await judge_run(make_span(run_id="r3"), _RUBRIC, model="claude-haiku-4")
 
     assert len(fake.prompts) == 1
     assert result.score == 0.9
@@ -118,7 +118,7 @@ async def test_judge_never_raises_on_llm_error(monkeypatch) -> None:
 
     monkeypatch.setattr(judge_mod, "_call_llm", _boom)
 
-    result = await judge_run(make_span(run_id="r4"), _RUBRIC)
+    result = await judge_run(make_span(run_id="r4"), _RUBRIC, model="claude-haiku-4")
 
     assert result.score == 0.0
     assert result.confidence == 0.0
@@ -136,7 +136,7 @@ async def test_judge_respects_timeout(monkeypatch) -> None:
 
     monkeypatch.setattr(judge_mod, "_call_llm", _slow)
 
-    result = await judge_run(make_span(run_id="r5"), _RUBRIC)
+    result = await judge_run(make_span(run_id="r5"), _RUBRIC, model="claude-haiku-4")
 
     assert result.reasoning == "judge_error"
     assert result.score == 0.0
@@ -356,3 +356,77 @@ def test_golden_dataset_stats(tmp_path) -> None:
     assert stats["pass_rate"] == pytest.approx(2 / 3)
     assert stats["difficulty_distribution"] == {"easy": 2, "hard": 1}
     assert stats["last_updated"] is not None
+
+
+# ---------------------------------------------------------------------------
+# Heuristic judge — free, offline, no LLM and no API key.
+# ---------------------------------------------------------------------------
+async def test_heuristic_judge_passes_relevant_success() -> None:
+    """A successful run with relevant output scores >= 0.5 — and never calls an LLM."""
+    span = make_span(
+        input="What is the capital of France?",
+        output="The capital of France is Paris.",
+        success=True,
+    )
+    result = await judge_run(span, _RUBRIC, model="heuristic")
+    assert result.model_used == "heuristic"
+    assert result.score >= 0.5
+    assert "heuristic" in result.reasoning
+
+
+async def test_heuristic_judge_scores_failed_run_low() -> None:
+    """A run flagged unsuccessful scores below the 0.5 pass threshold."""
+    span = make_span(output="", success=False, failure_type="exception")
+    result = await judge_run(span, _RUBRIC, model="heuristic")
+    assert result.score < 0.5
+
+
+async def test_heuristic_judge_flags_refusal() -> None:
+    """A refusal output scores low even when the run technically succeeded."""
+    span = make_span(output="I cannot help with that request.", success=True)
+    result = await judge_run(span, _RUBRIC, model="heuristic")
+    assert result.score <= 0.3
+
+
+async def test_heuristic_judge_never_calls_llm(monkeypatch) -> None:
+    """The heuristic engine must not touch the LLM network seam."""
+
+    async def _boom(prompt: str, model: str) -> str:
+        raise AssertionError("heuristic judge must not call the LLM")
+
+    monkeypatch.setattr(judge_mod, "_call_llm", _boom)
+    result = await judge_run(make_span(), _RUBRIC, model="heuristic")
+    assert result.model_used == "heuristic"
+    assert 0.0 <= result.score <= 1.0
+
+
+async def test_meta_eval_runs_free_with_heuristic_judge() -> None:
+    """run_meta_eval works end-to-end with the default free heuristic — no model, no key."""
+    pass_case = GoldenCase(
+        id="h1",
+        span=make_span(
+            run_id="h1",
+            input="What is the capital of France?",
+            output="The capital of France is Paris.",
+            success=True,
+        ),
+        human_label=True,
+        human_notes="",
+        difficulty="easy",
+        created_at=datetime.now(timezone.utc),
+        reviewed_by="tester",
+    )
+    fail_case = GoldenCase(
+        id="h2",
+        span=make_span(run_id="h2", output="", success=False, failure_type="exception"),
+        human_label=False,
+        human_notes="",
+        difficulty="easy",
+        created_at=datetime.now(timezone.utc),
+        reviewed_by="tester",
+    )
+
+    report = await run_meta_eval([pass_case, fail_case], judge_model="heuristic")
+
+    assert report.n_cases == 2
+    assert report.judge_accuracy == 1.0

@@ -3,6 +3,6 @@
 from failprobe.config import ProbeConfig, configure
 from failprobe.decorator import probe
 
-__version__ = "0.2.1"
+__version__ = "0.3.0"
 
 __all__ = ["probe", "ProbeConfig", "configure"]

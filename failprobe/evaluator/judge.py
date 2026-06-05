@@ -5,9 +5,19 @@ entry point is :func:`judge_run`, which **always** returns a :class:`JudgeResult
 and never raises — every failure (network, timeout, malformed response) is
 caught, logged to stderr, and converted into a result with ``score=0.0``.
 
-Model routing is by string prefix: ``claude*`` → Anthropic SDK, ``gpt*`` →
-OpenAI SDK. Both SDKs are imported lazily inside :func:`_call_llm` so importing
-this module never requires API credentials.
+Judge-engine routing by model identifier:
+
+* ``"heuristic"`` (the default) → a free, offline, pure-Python judge that makes
+  **no LLM or network calls and needs no API key**. Ideal for anyone who wants
+  meta-evaluation without paying for a model.
+* ``claude*`` → Anthropic SDK.
+* anything else (``gpt*``, ``llama*``, ``qwen*``, …) → an **OpenAI-compatible**
+  endpoint. With ``ProbeConfig.judge_base_url`` (or ``FAILPROBE_JUDGE_BASE_URL``)
+  this points at any local/self-hosted LLM such as Ollama, vLLM, or LM Studio;
+  with it unset it uses OpenAI's API. So no provider is ever required.
+
+SDKs are imported lazily inside :func:`_call_llm` so importing this module never
+requires API credentials.
 
 Per the layer-ownership rules, this module may read configuration and persist to
 storage (writing ``EvalResult`` rows) but must not perform span capture or
@@ -17,6 +27,8 @@ failure classification.
 import asyncio
 import json
 import logging
+import os
+import re
 import time
 from dataclasses import dataclass
 from functools import lru_cache
@@ -67,7 +79,7 @@ class _ParsedJudgement:
 async def judge_run(
     span: AgentSpan,
     rubric: str,
-    model: str = "claude-haiku-4",
+    model: str = "heuristic",
 ) -> JudgeResult:
     """Judge an agent run against ``rubric`` using ``model``.
 
@@ -83,8 +95,9 @@ async def judge_run(
     Args:
         span: The agent run to evaluate.
         rubric: The scoring rubric text injected into the prompt.
-        model: Model identifier; ``claude*`` routes to Anthropic, ``gpt*`` to
-            OpenAI.
+        model: Judge engine. ``"heuristic"`` (default) scores offline with no
+            LLM; ``claude*`` routes to Anthropic; anything else routes to an
+            OpenAI-compatible endpoint (configurable via ``judge_base_url``).
 
     Returns:
         A :class:`JudgeResult` for ``span.run_id``.
@@ -113,6 +126,17 @@ async def _evaluate(span: AgentSpan, rubric: str, model: str, start: float) -> J
     stricter prompt. Returns ``judge_error`` on an LLM/transport failure and
     ``parse_error`` when both attempts fail to parse.
     """
+    if model == "heuristic":
+        parsed = _heuristic_judge(span)
+        return JudgeResult(
+            run_id=span.run_id,
+            score=parsed.score,
+            reasoning=parsed.reasoning,
+            model_used="heuristic",
+            latency_ms=_elapsed_ms(start),
+            confidence=parsed.confidence,
+        )
+
     config = get_config()
     base_prompt = _build_prompt(span, rubric)
 
@@ -152,19 +176,19 @@ async def _evaluate(span: AgentSpan, rubric: str, model: str, start: float) -> J
 async def _call_llm(prompt: str, model: str) -> str:
     """Send ``prompt`` to the LLM selected by ``model`` and return its text.
 
-    Routing is by prefix: ``claude*`` uses the Anthropic async SDK, ``gpt*`` the
-    OpenAI async SDK. SDKs are imported lazily so this module imports cleanly
-    without credentials installed.
+    ``claude*`` uses the Anthropic async SDK. Every other model uses the OpenAI
+    **async SDK pointed at an OpenAI-compatible endpoint** — OpenAI by default,
+    or any local/self-hosted server (Ollama, vLLM, LM Studio, …) when
+    ``judge_base_url`` / ``FAILPROBE_JUDGE_BASE_URL`` is set. This is what lets
+    the judge run on a free local model with no paid API. SDKs are imported
+    lazily so this module imports cleanly without credentials installed.
 
     Args:
         prompt: Fully rendered judge prompt.
-        model: Model identifier.
+        model: Model identifier (``"heuristic"`` is handled before this call).
 
     Returns:
         The model's raw text response.
-
-    Raises:
-        ValueError: If ``model`` matches neither supported prefix.
     """
     if model.startswith("claude"):
         from anthropic import AsyncAnthropic
@@ -179,17 +203,25 @@ async def _call_llm(prompt: str, model: str) -> str:
             block.text for block in message.content if getattr(block, "type", None) == "text"
         )
 
-    if model.startswith("gpt"):
-        from openai import AsyncOpenAI
+    # OpenAI-compatible path: OpenAI, or any local/self-hosted endpoint.
+    from openai import AsyncOpenAI
 
-        client = AsyncOpenAI()
-        response = await client.chat.completions.create(
-            model=model,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        return response.choices[0].message.content or ""
-
-    raise ValueError(f"Unsupported judge model: {model!r}")
+    config = get_config()
+    base_url = config.judge_base_url or os.environ.get("FAILPROBE_JUDGE_BASE_URL")
+    # Local servers (e.g. Ollama) ignore the key but the SDK requires a non-empty
+    # value, so fall back to a harmless placeholder.
+    api_key = (
+        config.judge_api_key
+        or os.environ.get("FAILPROBE_JUDGE_API_KEY")
+        or os.environ.get("OPENAI_API_KEY")
+        or "not-needed"
+    )
+    client = AsyncOpenAI(base_url=base_url, api_key=api_key)
+    response = await client.chat.completions.create(
+        model=model,
+        messages=[{"role": "user", "content": prompt}],
+    )
+    return response.choices[0].message.content or ""
 
 
 async def _write_eval_result(result: JudgeResult) -> None:
@@ -317,3 +349,73 @@ def _failure_result(run_id: str, reasoning: str, model: str, start: float) -> Ju
         latency_ms=_elapsed_ms(start),
         confidence=0.0,
     )
+
+
+# --------------------------------------------------------------------------- #
+# Heuristic judge — free, offline, no LLM and no API key
+# --------------------------------------------------------------------------- #
+
+# Phrases signalling the agent refused or could not help.
+_REFUSAL_MARKERS = (
+    "i cannot",
+    "i can't",
+    "i can not",
+    "i'm unable",
+    "i am unable",
+    "i'm not able",
+    "i am not able",
+    "cannot help",
+    "can't help",
+    "unable to assist",
+    "cannot assist",
+    "as an ai",
+)
+# Phrases signalling an error/exception leaked into the output.
+_ERROR_MARKERS = ("traceback (most recent call last)", "exception:", "error:", "stack trace")
+# Common words ignored when measuring input/output relevance overlap.
+_STOPWORDS = frozenset(
+    {
+        "the", "a", "an", "of", "to", "in", "on", "for", "and", "or", "is",
+        "are", "was", "were", "be", "with", "what", "which", "how", "do",
+        "does", "did", "this", "that", "it", "as", "at", "by", "from", "your",
+        "you", "me", "please", "can", "could", "would",
+    }
+)
+
+
+def _tokens(text: str) -> set[str]:
+    """Return lowercase word tokens of ``text``, dropping stopwords and 1-char tokens."""
+    return {
+        token
+        for token in re.findall(r"[a-z0-9]+", text.lower())
+        if len(token) > 1 and token not in _STOPWORDS
+    }
+
+
+def _heuristic_judge(span: AgentSpan) -> _ParsedJudgement:
+    """Score a run offline with rule-based text signals — no LLM, no API key.
+
+    A free, deterministic baseline judge: failed runs and empty / error /
+    refusal outputs score low; otherwise the score reflects how relevant the
+    output is to the input (token overlap). ``confidence`` is moderate to signal
+    that this is a heuristic rather than a semantic model. Never raises.
+    """
+    output = _stringify(span.output).strip()
+    lowered = output.lower()
+
+    if span.success is False or span.failure_type:
+        reason = span.failure_type or "run marked unsuccessful"
+        return _ParsedJudgement(0.15, f"heuristic: failed run ({reason})", 0.6)
+    if not output:
+        return _ParsedJudgement(0.0, "heuristic: empty output", 0.6)
+    if any(marker in lowered for marker in _ERROR_MARKERS):
+        return _ParsedJudgement(0.1, "heuristic: output looks like an error", 0.5)
+    if any(marker in lowered for marker in _REFUSAL_MARKERS):
+        return _ParsedJudgement(0.2, "heuristic: output looks like a refusal", 0.5)
+
+    input_tokens = _tokens(_stringify(span.input))
+    output_tokens = _tokens(output)
+    overlap = (len(input_tokens & output_tokens) / len(input_tokens)) if input_tokens else 0.5
+    length_factor = 1.0 if len(output) >= 8 else 0.6
+    score = _clamp((0.55 + 0.35 * overlap) * length_factor)
+    return _ParsedJudgement(score, f"heuristic: relevant output (overlap={overlap:.2f})", 0.5)

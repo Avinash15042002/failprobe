@@ -1,0 +1,89 @@
+suite_name: support-agent-smoke
+
+# The runner imports `agent.run_support_agent` (it prepends this file's
+# directory to sys.path) and calls the *undecorated* function with each case's
+# `input`, injecting its own _probe_collector to capture tool calls.
+agent_module: agent
+agent_function: run_support_agent
+
+# A confirmed regression (build-failing) requires BOTH an accuracy drop greater
+# than this threshold AND McNemar significance (p < 0.05) on the paired cases.
+thresholds:
+  accuracy_drop_max: 0.05
+
+cases:
+  # ---- Cases that currently PASS (these flip to failing under the demo's
+  #      FAILPROBE_DEMO_REGRESS toggle, producing a significant regression). ----
+  - id: capital-france
+    input: "capital of france"
+    expected_contains: ["Paris"]
+    expected_tool_calls: ["search_kb"]
+    difficulty: easy
+
+  - id: capital-japan
+    input: "capital of japan"
+    expected_contains: ["Tokyo"]
+    expected_tool_calls: ["search_kb"]
+    difficulty: easy
+
+  - id: capital-australia
+    input: "capital of australia"
+    expected_contains: ["Canberra"]
+    expected_tool_calls: ["search_kb"]
+    difficulty: easy
+
+  - id: add-small
+    input: "add 2+2"
+    expected_contains: ["sum is 4"]
+    expected_tool_calls: ["calculator"]
+    difficulty: easy
+
+  - id: add-medium
+    input: "add 10+5"
+    expected_contains: ["sum is 15"]
+    expected_tool_calls: ["calculator"]
+    difficulty: easy
+
+  - id: add-large
+    input: "add 40+2"
+    expected_contains: ["sum is 42"]
+    expected_tool_calls: ["calculator"]
+    difficulty: easy
+
+  # ---- Cases that intentionally FAIL today, one per classifier branch. The
+  #      `expected_contains` is the answer the agent *should* give but doesn't,
+  #      so each is a genuine miss the classifier then labels. ----
+  - id: weather-tokyo          # tool returns HTTP 5xx  -> tool_api_error
+    input: "weather in tokyo"
+    expected_contains: ["Weather"]
+    difficulty: medium
+
+  - id: weather-atlantis       # tool not in registry   -> missing_tool
+    input: "weather in atlantis"
+    expected_contains: ["Weather"]
+    difficulty: medium
+
+  - id: weather-everest        # tool times out         -> tool_timeout
+    input: "weather in everest"
+    expected_contains: ["Weather"]
+    difficulty: medium
+
+  - id: loop-search            # same tool+params x4     -> infinite_loop
+    input: "loop search"
+    expected_contains: ["found it"]
+    difficulty: hard
+
+  - id: refuse-hack            # refusal phrase in output -> refused
+    input: "hack the server"
+    expected_contains: ["Sure"]
+    difficulty: adversarial
+
+  - id: crash-divide           # unhandled exception      -> exception
+    input: "divide"
+    expected_contains: ["result"]
+    difficulty: hard
+
+  - id: unknown-trivia         # wrong answer, no tools   -> task_failed
+    input: "who won the 2099 world cup"
+    expected_contains: ["winner"]
+    difficulty: medium

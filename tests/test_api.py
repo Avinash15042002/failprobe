@@ -54,7 +54,7 @@ async def test_health(client: AsyncClient) -> None:
     """``GET /health`` returns 200 with status and version."""
     resp = await client.get("/health")
     assert resp.status_code == 200
-    assert resp.json() == {"status": "ok", "version": "0.2.1"}
+    assert resp.json() == {"status": "ok", "version": "0.3.0"}
 
 
 async def test_list_runs_empty(client: AsyncClient) -> None:
@@ -159,7 +159,9 @@ async def test_eval_run_judges(client: AsyncClient, monkeypatch) -> None:
     monkeypatch.setattr(judge_mod, "_call_llm", _fake_call)
     run_id = await _seed_run()
 
-    resp = await client.post("/eval/run", json={"run_id": run_id})
+    # Force the LLM judge path (the default judge model is now the offline
+    # ``heuristic`` judge, which never calls the monkeypatched ``_call_llm``).
+    resp = await client.post("/eval/run", json={"run_id": run_id, "model": "claude-haiku-4"})
     assert resp.status_code == 200
     body = resp.json()
     assert body["run_id"] == run_id

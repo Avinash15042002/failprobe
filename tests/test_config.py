@@ -12,8 +12,10 @@ def test_default_instantiation_no_args() -> None:
     cfg = ProbeConfig()
     assert cfg.db_url == "sqlite+aiosqlite:///failprobe.db"
     assert cfg.api_url is None
-    assert cfg.judge_model == "claude-haiku-4"
-    assert cfg.judge_timeout == 10.0
+    assert cfg.judge_model == "heuristic"
+    assert cfg.judge_base_url is None
+    assert cfg.judge_api_key is None
+    assert cfg.judge_timeout == 30.0
     assert cfg.loop_threshold == 3
     assert cfg.token_overflow_threshold == 120_000
     assert cfg.emit_console is True

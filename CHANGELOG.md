@@ -4,6 +4,32 @@ All notable changes to FailProbe are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026
+
+### Added
+
+- **Free heuristic judge (default)** — the meta-eval judge now defaults to a
+  pure-Python `heuristic` engine that scores runs with no LLM call and **no API
+  key**, using refusal/error markers and token-overlap signals. FailProbe is now
+  fully usable end to end at zero cost.
+- **OpenAI-compatible judge endpoints** — non-`claude`, non-`heuristic` judge
+  models route to an OpenAI-compatible SDK, so you can point the judge at a
+  local or self-hosted LLM (Ollama, vLLM, LM Studio, …) via the new
+  `judge_base_url` config field / `FAILPROBE_JUDGE_BASE_URL` env var. `claude*`
+  models still route to the Anthropic SDK.
+- **`examples/support_agent/`** — a deterministic, key-free demo agent plus a
+  13-case regression suite that exercises every classifier branch and the
+  statistical regression gate end to end.
+
+### Changed
+
+- `judge_model` now defaults to `"heuristic"` (was an LLM model). Pass an
+  explicit `model` (e.g. `claude-haiku-4`) on the CLI/API or set it via
+  `configure(ProbeConfig(judge_model=...))` to use an LLM judge.
+- New `judge_api_key` config field (env `FAILPROBE_JUDGE_API_KEY`, falling back
+  to `OPENAI_API_KEY`) supplies credentials for the OpenAI-compatible path; any
+  non-empty value works for local servers like Ollama.
+
 ## [0.2.1] - 2026
 
 ### Fixed
